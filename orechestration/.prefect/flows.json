@@ -1,0 +1,3 @@
+{
+  "main-flow": "wine-quality-orchestration.py:main_flow"
+}

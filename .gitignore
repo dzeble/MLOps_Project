@@ -167,3 +167,4 @@ __pycache__
 *models
 *.b
 *model
+*.csv

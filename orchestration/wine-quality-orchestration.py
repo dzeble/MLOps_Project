@@ -2,15 +2,14 @@ import pathlib
 import pickle
 import pandas as pd
 import numpy as np
-import scipy
-import sklearn
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.metrics import mean_squared_error, r2_score
 import mlflow
-import xgboost as xgb
 from prefect import flow, task
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import LabelEncoder
+from prefect.artifacts import create_markdown_artifact
+from datetime import date
 
 
 #function for reading the data
@@ -35,7 +34,7 @@ def read_dafaframe(filename):
 
     return df
 
-
+#function to split the data
 @task
 def transform(train_df, validation_df):
     trained_dict =  train_df.drop(columns=['type','quality'])
@@ -52,7 +51,7 @@ def transform(train_df, validation_df):
     y_val = validation_df[target].values
 
     return X_train, y_train, X_val, y_val
-
+#function to train the data
 @task(log_prints=True)
 def training(X_train, y_train, X_val, y_val):
 
@@ -86,9 +85,26 @@ def training(X_train, y_train, X_val, y_val):
         
         mlflow.sklearn.log_model(etc,"model")
 
+        markdown__metric_report = f"""# Metric Report
+
+        ## Summary
+
+        Wine Quality Prediction 
+
+        ## RMSE ExtraTreesClassifier Model
+
+        | Region    | RMSE | Accuracy|
+        |:----------|-------:|-------:|
+        | {date.today()} | {rmse:.2f} | {accuracy:.2f} |
+"""
+        
+        create_markdown_artifact(
+        key="wine-quality-model-report", markdown=markdown__metric_report
+        )
+
     return None
 
-
+#main flow
 @flow
 def main_flow(
     train_path: str = './wine_data/train_wine_data.csv',

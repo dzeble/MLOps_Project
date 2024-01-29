@@ -372,3 +372,115 @@ Model Registering can also be done in code as well as in the mlflow ui. It reall
 You can also assing **stages** to the versions. I found the best results to come from *Version 1* and that is why I have put it in **Production**
 
 ![](images/versioning.png)
+
+
+### 3. Orchestration
+
+Okay, a lot of progress so far but going further, there might be a lot of things to do to the model. We might want our model to run on at a scheduled time or perhaps observe what is going on when it runs and any possible failures.
+
+This can be possible with another library called **prefect**. Prefect alows for orchestration and observation of our workflows. Prefect is a flexible, open source Python framework to turn standard pipelines into fault-tolerant dataflows.
+
+#### Installation
+
+In this directory, there is also a ```requirements.txt``` in there but in addition to that, I sugest running ```pip install -U prefect``` in the terminal to get the updated version of prefect.
+
+Prefect has lots of neat features. It runs with an Orchestartion API used by the server to work with metadata, comes with a sqlite database that is configured upon installation and a visually appealing UI.
+
+Before I start with this section, let me clarify a few things to make sure we are on the same page.
+
+- **Task:** A task is basically a function serving as a prefect unit.
+- **Flow:** A flow is a 'container' where the tasks can be called and sent to the prefect UI.
+- **Sub-flow:** A sublflow is a flow called by another flow.
+
+Okay, let's get down to business. To run the prefect server, head down to your IDE terminal and run this:
+
+    prefect server start
+
+You would have to open another terminal because as long as the prefect server is running, that particular server will be unsuable. 
+
+Once you run this command, you will be provided a link you can follow to the UI where you should see something like this:
+
+![](images/Prefect-home.png)
+
+If you are running the prefect server for the first time, your's might look a bit more bare.
+
+#### Logging Flows
+
+As usual, we beggin with some imports
+
+```python
+from prefect import flow, task
+```
+as well as our previous imports
+
+To log the model runs as a flow on prefect, I turned all the important parts into functions or in this case, tasks. The way to turn a function into a task or a flow is by simply adding ```@task``` or ```@flow``` decorator
+
+For instance, the function used before to read the dataframe becomes this: 
+
+```python
+@task(retries=4)
+def read_dafaframe(filename):
+    df = pd.read_csv(filename)
+
+    le = LabelEncoder()
+    df['type'] = le.fit_transform(df['type'])
+
+    encoder = OneHotEncoder()
+    encoded_types = encoder.fit_transform(df['type'].values.reshape(-1, 1))
+
+    label = le.classes_.tolist()
+    wine_types = pd.DataFrame(encoded_types.toarray(), columns=label)
+
+    df = pd.concat([df, wine_types], axis=1)
+
+    for col, value in df.items():
+        if col != 'type':
+            df[col] = df[col].fillna(df[col].mean())
+
+    return df
+```
+
+The decorators can also take in arguments. For instance the decorator in this code has an argument that says ```retries=4``` , meaning that it should try again upto 4 times in the case of failure.
+
+After I run my python script containing my tasks and flows, this what appeared on the UI:
+
+![](images/first-run.png)
+
+The flow run shows logs in the terminal as it runs:
+
+![](images/first-run-logs.png)
+
+The flow run also comes with some information
+
+![](images/first-run-details.png)
+![](images/first-run-details-logs.png)
+
+#### Deployment
+
+With prefect, it is also possible to deploy your work flows when they are ready.
+
+
+    prefect deploy 'path to your python file':main_flow -n 'give it a name' -p 'name of work pool'
+
+
+the ```'path to your python file'``` is basically the python files, where your tasks and flows are. You would also have to give this deployment a name and assign it to a pool so you'll have to make a pool. 
+
+![](images/work-pool.png)
+
+Once you do that, you can deploy. I decided to schedule my deployments within intervals.
+
+![](images/scheduled%20deployments.png)
+
+
+#### AWS
+
+It is also possible to include AWS blocks as an alternative storage unit in prefect either from the UI or from the code if you already have an existing S3 bucket on the AWS Console
+
+![](images/aws-s3-block.png)
+![](images/aws-s3-block-2.png)
+
+
+We can also keep our data in the aws bucket 
+
+
+![](images/upload-to-aws.png)

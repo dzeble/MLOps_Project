@@ -12,9 +12,11 @@ from prefect.artifacts import create_markdown_artifact
 from datetime import date
 
 
+
+
 #function for reading the data
 @task(retries=4)
-def read_dafaframe(filename):
+def read_dataframe(filename):
     df = pd.read_csv(filename)
 
     le = LabelEncoder()
@@ -117,8 +119,8 @@ def main_flow(
     mlflow.set_experiment("wine-quality-experiment")
 
     # Load
-    df_train = read_dafaframe(train_path)
-    df_val = read_dafaframe(val_path)
+    df_train = read_dataframe(train_path)
+    df_val = read_dataframe(val_path)
 
     # Transform
     X_train,y_train,X_val,y_val = transform(df_train, df_val)

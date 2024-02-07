@@ -39,6 +39,10 @@ jobs:
             wine_quality_training/wine_data/train_wine_data.csv
             wine_quality_training/wine_data/test_wine_data.csv
 
+      - name: List Downloaded Files
+        run: |
+          ls -R wine_quality_training/wine_data
+
       - name: Train Model
         run: python wine_quality_training/wine_training.py
 

@@ -15,7 +15,7 @@ from sklearn.ensemble import RandomForestRegressor, ExtraTreesClassifier, Random
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import mean_squared_error, r2_score
-
+import os
 import pickle
 
 import warnings 
@@ -23,6 +23,10 @@ warnings.filterwarnings('ignore')
 
 
 # In[2]:
+
+if not os.path.exists('models'):
+    os.makedirs('models')
+
 
 
 #training data

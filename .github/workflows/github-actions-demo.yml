@@ -18,10 +18,10 @@ jobs:
         with:
           python-version: 3.8
 
-      - name: Install dependencies
+      - name: Install dependencies and other dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install deepchecks
+          pip install deepchecks seaborn pandas numpy matplotlib sklearn mlflow xgboost hyperopt
 
       - name: Train Model
         run: python wine_quality_training/wine_training.py

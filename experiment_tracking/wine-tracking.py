@@ -54,8 +54,8 @@ def read_dafaframe(filename):
 # In[5]:
 
 
-train_df = read_dafaframe('./wine_data/train_wine_data.csv')
-validation_df = read_dafaframe('./wine_data/test_wine_data.csv')
+train_df = read_dafaframe('wine_quality_training/wine_data/train_wine_data.csv')
+validation_df = read_dafaframe('wine_quality_training/wine_data/test_wine_data.csv')
 
 
 trained_dict =  train_df.drop(columns=['type','quality'])
@@ -118,8 +118,8 @@ with mlflow.start_run():
 
     mlflow.set_tag("developer","Sven")
 
-    mlflow.log_param("train-data-path", "../wine_data/train_wine_data.csv")
-    mlflow.log_param("valid-data-path", "../wine_data/test_wine_data.csv")
+    mlflow.log_param("train-data-path", "wine_quality_training/wine_data/train_wine_data.csv")
+    mlflow.log_param("valid-data-path", "wine_quality_training/wine_data/test_wine_data.csv")
 
     n_estimators = 100
     mlflow.log_param('n_estimators',n_estimators)
@@ -237,8 +237,8 @@ with mlflow.start_run():
 
     mlflow.set_tag("developer","Sven")
 
-    mlflow.log_param("train-data-path", "../wine_data/train_wine_data.csv")
-    mlflow.log_param("valid-data-path", "../wine_data/test_wine_data.csv")
+    mlflow.log_param("train-data-path", "wine_quality_training/wine_data/train_wine_data.csv")
+    mlflow.log_param("valid-data-path", "wine_quality_training/wine_data/train_wine_data.csv")
 
     n_estimators = 100
     mlflow.log_param('n_estimators',n_estimators)
@@ -390,8 +390,8 @@ with mlflow.start_run():
 
     mlflow.set_tag("developer","Sven")
 
-    mlflow.log_param("train-data-path", "../wine_data/train_wine_data.csv")
-    mlflow.log_param("valid-data-path", "../wine_data/test_wine_data.csv")
+    mlflow.log_param("train-data-path", "wine_quality_training/wine_data/train_wine_data.csv")
+    mlflow.log_param("valid-data-path", "wine_quality_training/wine_data/train_wine_data.csv")
 
     n_estimators = 100
     mlflow.log_param('n_estimators',n_estimators)

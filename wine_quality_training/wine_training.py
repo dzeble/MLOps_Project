@@ -26,7 +26,7 @@ warnings.filterwarnings('ignore')
 
 
 #training data
-wine_train_df = pd.read_csv('wine_data/train_wine_data.csv') 
+wine_train_df = pd.read_csv('wine_quality_training/wine_data/train_wine_data.csv') 
 wine_train_df.head()
 
 
@@ -316,9 +316,9 @@ def read_dafaframe(filename):
 # In[30]:
 
 
-train_df = read_dafaframe('wine_data/train_wine_data.csv')
+train_df = read_dafaframe('wine_quality_training/wine_data/train_wine_data.csv')
 #adding a validation dataset
-validation_df = read_dafaframe('wine_data/test_wine_data.csv')
+validation_df = read_dafaframe('wine_quality_training/wine_data/test_wine_data.csv')
 
 
 # In[31]:

@@ -23,20 +23,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install deepchecks seaborn pandas numpy matplotlib scikit-learn mlflow xgboost hyperopt
 
-
       - name: Upload Artifacts 
         uses: actions/upload-artifact@v2
         with: 
-            name: wine_data
-            path: wine_quality_training/wine_data/train_wine_data.csv
-                  wine_quality_training/wine_data/test_wine_data.csv
+          name: wine_data
+          path: |
+            wine_quality_training/wine_data/train_wine_data.csv
+            wine_quality_training/wine_data/test_wine_data.csv
                   
       - name: Download Artifacts
         uses: actions/download-artifact@v2
         with:
           name: wine_data 
-          path: wine_quality_training/wine_data/train_wine_data.csv
-                wine_quality_training/wine_data/test_wine_data.csv
+          path: |
+            wine_quality_training/wine_data/train_wine_data.csv
+            wine_quality_training/wine_data/test_wine_data.csv
 
       - name: Train Model
         run: python wine_quality_training/wine_training.py

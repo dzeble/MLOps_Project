@@ -347,43 +347,43 @@ with mlflow.start_run():
 # In[27]:
 
 
-logged_model = 'runs:/972efc8246b347e8beb77b09ad439e4d/models_mlflow'
+# logged_model = 'runs:/972efc8246b347e8beb77b09ad439e4d/models_mlflow'
 
-# Load model as a PyFuncModel.
-loaded_model = mlflow.pyfunc.load_model(logged_model)
-
-
-# In[28]:
+# # Load model as a PyFuncModel.
+# loaded_model = mlflow.pyfunc.load_model(logged_model)
 
 
-loaded_model
+# # In[28]:
 
 
-# In[29]:
+# loaded_model
 
 
-xgboost_model = mlflow.xgboost.load_model(logged_model)
+# # In[29]:
 
 
-# In[30]:
+# xgboost_model = mlflow.xgboost.load_model(logged_model)
 
 
-xgboost_model
+# # In[30]:
 
 
-# In[31]:
+# xgboost_model
 
 
-new_y_pred = xgboost_model.predict(valid)
+# # In[31]:
 
 
-# In[32]:
+# new_y_pred = xgboost_model.predict(valid)
 
 
-new_y_pred[:10]
+# # In[32]:
 
 
-# In[41]:
+# new_y_pred[:10]
+
+
+# # In[41]:
 
 
 with mlflow.start_run():

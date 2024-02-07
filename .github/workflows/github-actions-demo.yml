@@ -13,22 +13,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: Wine data
-          path: wine_quality_training/wine_data
-
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
-      - name: Install dependencies and other dependencies
+      - name: Install dependencies
         run: |
-            python -m pip install --upgrade pip
-            pip install deepchecks seaborn pandas numpy matplotlib scikit-learn mlflow xgboost hyperopt
-        
+          python -m pip install --upgrade pip
+          pip install deepchecks seaborn pandas numpy matplotlib scikit-learn mlflow xgboost hyperopt
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Wine data
+          path: wine_quality_training/wine_data
 
       - name: Train Model
         run: python wine_quality_training/wine_training.py
@@ -38,7 +37,6 @@ jobs:
 
       - name: Archive Deepchecks Results
         uses: actions/upload-artifact@v3
-
         with:
           name: deepchecks results
           path: experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel

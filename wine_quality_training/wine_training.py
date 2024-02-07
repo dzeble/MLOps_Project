@@ -66,9 +66,13 @@ plt.tight_layout(pad=0.5, w_pad=0.7, h_pad=5.0)
 
 
 #checking which values affect wine quality
-wine_test = wine_train_df.corr()
-plt.figure(figsize = (20,20))
-sns.heatmap(wine_test, cmap = 'Blues', annot = True)
+# Exclude non-numeric columns
+numeric_columns = wine_train_df.select_dtypes(include=['float64', 'int64']).columns
+wine_test = wine_train_df[numeric_columns].corr()
+
+plt.figure(figsize=(20, 20))
+sns.heatmap(wine_test, cmap='Blues', annot=True)
+
 
 
 # In[8]:

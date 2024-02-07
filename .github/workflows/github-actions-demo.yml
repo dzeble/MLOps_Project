@@ -25,11 +25,11 @@ jobs:
 
       - name: Train Model
         run: |
-          /mnt/c/Users/Dev/desktop/mlops_project/wine_quality_training/wine_training.ipynb
+            wine_quality_training/wine_training.py
 
       - name: Validate Model Performance
         run: |
-            /mnt/c/Users/Dev/desktop/mlops_project/experiment_tracking/wine-tracking.ipynb
+            experiment_tracking/wine-tracking.py
 
       - name: Archive Deepchecks Results
         uses: actions/upload-artifact@v3
@@ -37,4 +37,4 @@ jobs:
         with:
           name: deepchecks results
           path: |
-            /mnt/c/Users/Dev/desktop/mlops_project/experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel
+            experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel

@@ -24,17 +24,14 @@ jobs:
           pip install deepchecks
 
       - name: Train Model
-        run: |
-            wine_quality_training/wine_training.py
+        run: python wine_quality_training/wine_training.py
 
       - name: Validate Model Performance
-        run: |
-            experiment_tracking/wine-tracking.py
+        run: python experiment_tracking/wine-tracking.py
 
       - name: Archive Deepchecks Results
         uses: actions/upload-artifact@v3
 
         with:
           name: deepchecks results
-          path: |
-            experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel
+          path: experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel

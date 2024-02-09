@@ -41,13 +41,6 @@ def predict_quality(data:WineQuality):
     red_wine = data.red_wine
 
 
-    feature_names = [
-        'fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar',
-        'chlorides', 'free_sulfur_dioxide', 'total_sulfur_dioxide', 'density',
-        'pH', 'sulphates', 'alcohol', 'red_wine'
-    ]
-
-
         # Convert the features to a NumPy array
     features = np.array([[fixed_acidity, volatile_acidity, citric_acid, residual_sugar,
                           chlorides, free_sulfur_dioxide, total_sulfur_dioxide, density,

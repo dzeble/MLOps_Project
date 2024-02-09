@@ -484,3 +484,11 @@ We can also keep our data in the aws bucket
 
 
 ![](images/upload-to-aws.png)
+
+
+### 1. Deployment
+
+So with a functioning model like, it would be a shame to just leave it unused. Model deployment was discussed in the previous section where the model was deployed on prefect but there are other ways where you can actually input the values for the independent variables and it will predict the target variable for you. 
+
+
+Now depending on your use case, there are various means to deploy your model. It can be with in Batches, a Web Service or a Streaming service. For this particular use case, I think the best way to go is with a Web Service mostly because the quality of wine isn't really something you need to know on the go. You can get it when you decide to access it.

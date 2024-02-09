@@ -486,9 +486,259 @@ We can also keep our data in the aws bucket
 ![](images/upload-to-aws.png)
 
 
+#### Some Best Practices
+
+
+Now that we have come this far, one important thing we must consider is **testing** in implementing and **CI/CD pipeline**.
+
+- Testing: Here I implemented some testing using ```unittest``` to test each of the important aspects of the process that I have put into simple functions. This makes it easier to catch possible errors and fix them before deployment and production.
+
+![](images/Unit_test1.png)
+
+All I have to do is gather my functions and call them in a test file with various syntax to help me test
+
+
+```python
+class TestReadDataFrame(unittest.TestCase):
+
+    def setUp(self):
+        print('test started')
+
+    def test_read_csv(self):
+        df = read_dataframe(train_path)
+        self.assertEqual(df.shape, (32485, 13))
+
+        expected_cols = ['fixed_acidity', 'volatile_acidity', 
+                        'citric_acid', 'residual_sugar', 
+                        'chlorides', 'free_sulfur_dioxide',  
+                        'total_sulfur_dioxide', 'density', 'pH', 
+                        'sulphates', 'alcohol', 'quality'] 
+        
+        self.assertCountEqual(df[expected_cols].columns.tolist(), expected_cols)
+
+    def test_label_encoding(self):
+        df = read_dataframe(train_path)
+        actual_df = pd.read_csv(train_path)
+        # Count instances of each type 
+        white_count = (actual_df['type'] == 'white').sum()  
+        red_count = (actual_df['type'] == 'red').sum()
+        # Check encoded columns match counts
+        encoded_white = (df['type'] == 1).sum() 
+        encoded_red = (df['type'] == 0).sum()
+        
+        # Compare counts between original and encoded
+        self.assertEqual(white_count, encoded_white)
+        self.assertEqual(red_count, encoded_red)
+
+    
+    def test_missing_values(self):
+         df = read_dataframe(train_path)  
+         # Check missing values
+         self.assertFalse(df.isnull().any().any())
+            
+
+
+    def tearDown(self):
+        print('test ended')
+
+```
+
+This particular test was to test the ```read_dataframe``` function. It makes sure it has the right columns, make sure the One Hot Encoding worked well and matches to the original values and lastly, it checks for missing values.
+
+VS code also has a buit in UI component that makes viewing these test results easier. If you look at the left hand side of the image above, You will see the IDE showing that the tests have run sucessfully.
+
+
+- CI/CD pipeline: The CI/CD (Continuos Integration/ Continuos Deployment)pipline  is a way to automate the whole process and keep it up to date by continuosly. It refers to pipeline continuous integration, which consists of automated building and testing of our code and model ,and pipeline continuous delivery, which consists of automated pipeline deployment for continuous training and delivery of ML models.
+
+This was made possible with the help of ```github```. That was where I deployed it to and it did all my testing for me and indeed, I did have some errors and problems I had too fix. To get this up and running, you would need to make a ```.github``` directory and within that, make another folder called ```workflows```. Within the ```workflows``` directory, you need to create a ```github-actions-demo.yml``` file with the following content:
+
+
+```yml
+name: Model Training and Validation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install deepchecks seaborn pandas numpy matplotlib scikit-learn mlflow xgboost hyperopt
+
+      - name: Upload Artifacts 
+        uses: actions/upload-artifact@v2
+        with: 
+          name: wine_data
+          path: |
+            wine_quality_training/wine_data/train_wine_data.csv
+            wine_quality_training/wine_data/test_wine_data.csv
+                  
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: wine_data 
+          path: |
+            wine_quality_training/wine_data/train_wine_data.csv
+            wine_quality_training/wine_data/test_wine_data.csv
+
+      - name: List Downloaded Files
+        run: |
+          ls -R wine_quality_training/wine_data
+
+      - name: Train Model
+        run: python wine_quality_training/wine_training.py
+
+      - name: Validate Model Performance
+        run: python experiment_tracking/wine-tracking.py
+
+      - name: Archive Deepchecks Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: deepchecks results
+          path: experiment_tracking/mlruns/1/2b885cabc1f8435dbdd6c684891242ac/artifacts/model/MLmodel
+
+```
+
+This installs deepchecks, which is what we will use for our integration. It also goes through the needed files and runs them on ```github```. This happens on every ```push``` to give us something like this:
+
+![](images/CI_CD1.png)
+ 
+
+ And now we can go through and see our logs
+
+![](images/CI_CD2.png)
+
+
 ### 1. Deployment
 
-So with a functioning model like, it would be a shame to just leave it unused. Model deployment was discussed in the previous section where the model was deployed on prefect but there are other ways where you can actually input the values for the independent variables and it will predict the target variable for you. 
+So with a functioning model like, it would be a shame to just leave it unused. Model deployment was discussed in previous sections but there are other ways where you can actually input the values for the independent variables and it will predict the target variable for you. 
 
 
-Now depending on your use case, there are various means to deploy your model. It can be with in Batches, a Web Service or a Streaming service. For this particular use case, I think the best way to go is with a Web Service mostly because the quality of wine isn't really something you need to know on the go. You can get it when you decide to access it.
+Now depending on your use case, there are various means to deploy your model. It can be with in Batches, a Web Service or a Streaming service. For this particular use case, I think the best way to go is with a Web Service mostly because the quality of wine isn't really something you need to know on the go. You can get it whenever you decide to access it.
+
+
+So with the Web Service, I initially wanted to use **Flask** but was advised to use a better alternative called **FastAPI** , which was faster and provided me with a UI to interact with. So for this section, I made a new directory called **deployment** and navigated to it then I installed some dependencies.
+
+    pip install fastapi uvicorn
+
+To install **FastAPI** and **uvicorn** (will be used to run the web app)
+
+
+So all the times I used pickle to save the models, now is a good time to use those.
+
+
+```python
+
+# 1. Library imports
+import uvicorn
+from fastapi import FastAPI
+from Quality import WineQuality
+import numpy as np
+import pickle
+import pandas as pd
+# 2. Create the app object
+app = FastAPI()
+pickle_in = open("rfc.pkl","rb")
+classifier=pickle.load(pickle_in)
+
+# 3. Index route, opens automatically on http://127.0.0.1:8000
+@app.get('/')
+def index():
+    return {'message': 'Hello, World'}
+
+# 4. Expose the prediction functionality, make a prediction from the passed
+@app.post('/predict')
+def predict_quality(data:WineQuality):
+
+    fixed_acidity = data.fixed_acidity
+    volatile_acidity = data.volatile_acidity
+    citric_acid = data.citric_acid
+    residual_sugar = data.residual_sugar
+    chlorides = data.chlorides
+    free_sulfur_dioxide = data.free_sulfur_dioxide
+    total_sulfur_dioxide = data.total_sulfur_dioxide
+    density = data.density
+    pH = data.pH
+    sulphates = data.sulphates
+    alcohol = data.alcohol
+    red_wine = data.red_wine
+
+        # Convert the features to a NumPy array
+    features = np.array([[fixed_acidity, volatile_acidity, citric_acid, residual_sugar,
+                          chlorides, free_sulfur_dioxide, total_sulfur_dioxide, density,
+                          pH, sulphates, alcohol, red_wine]])
+
+    prediction = classifier.predict(features)
+
+    prediction = prediction[0].item()
+
+    return {
+        'prediction': prediction
+    }
+
+# 5. Run the API with uvicorn
+if __name__ == '__main__':
+    uvicorn.run(app, host='127.0.0.1', port=8000)
+    
+```
+
+Some part of this might look farmiliar because we are taking the columns from our featured data set. I basically used pickle to import our model, then made some routes with **FastAPI** ,one being a welcome page that just says *Hello World* and another that will predict. Before I talk about how it works, you would notice from the code that our predict route has a funcion that calls ```WineQuality``` from thin air🤔. Well that function is from an imported class I created called ```Quality``` that uses a library called ```pydantic``` which makes it very easy to integrate data science or machine learning works with **FastAPI**, let me show the class:
+
+
+```python
+from pydantic import BaseModel
+class WineQuality(BaseModel):
+   
+   fixed_acidity:         float
+   volatile_acidity:      float
+   citric_acid:           float
+   residual_sugar:        float
+   chlorides:             float
+   free_sulfur_dioxide:   float
+   total_sulfur_dioxide:  float
+   density:               float
+   pH:                    float
+   sulphates:             float
+   alcohol:               float
+   red_wine:              float
+```
+
+
+So you might think, like a typical **Flask** application, the way to get to the predictions is by adding ```"/predict"``` to the route but let's see what happens when we do that:
+
+![](images/predict_route.png)
+
+Our message is there but no predictions and no way of inputting values for our independent variables but **FastAPI** has a way of doing that. Instead of  ```"/predict"``` , we do  ```"/docs"``` instead and we get this:
+
+
+![](images/FastAPI_docs.png)
+
+
+A nice looking UI. And we can also see a json format of our independent variables so we can input some values.
+
+
+![](images/FastAPI_json.png)
+
+
+And we can also get a prediction:
+
+![](images/FastAPI_prediction.png)
+
+
+And we can confirm from out data, looking at the very first row, we can see that the predictions match the independent variables. I tried with a few other rows and got the right predictions, if you would like to try it too, you can pick a row from the dataset and use the values in there to confirm the predictions:
+
+![](images/FastAPI_proof.png)

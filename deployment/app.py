@@ -46,7 +46,6 @@ def predict_quality(data:WineQuality):
                           chlorides, free_sulfur_dioxide, total_sulfur_dioxide, density,
                           pH, sulphates, alcohol, red_wine]])
 
-   # print(classifier.predict([[variance,skewness,curtosis,entropy]]))
     prediction = classifier.predict(features)
 
     prediction = prediction[0].item()

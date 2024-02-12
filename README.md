@@ -742,3 +742,87 @@ And we can also get a prediction:
 And we can confirm from out data, looking at the very first row, we can see that the predictions match the independent variables. I tried with a few other rows and got the right predictions, if you would like to try it too, you can pick a row from the dataset and use the values in there to confirm the predictions:
 
 ![](images/FastAPI_proof.png)
+
+
+#### Load Testing
+
+After using a web service to deploy the model, it is also helpful so test how the web app will fair when multiple users utilize it. With this, a very helpful tool is ```locust```. Locust is an open source performance/load testing tool for HTTP and other protocols. Its developer friendly approach allows you to define your tests in regular Python code. Locust tests can be run from command line or using its web-based UI.
+
+
+To use ```locust``` , we will first have to install it with
+
+    pip install locust
+
+After that, I made new file in my ```deployment``` directory called ```locustfile.py``` and modified the initial FastAPI file.
+
+
+
+```python
+from locust import HttpUser, task, between
+import json
+import random
+
+class MyUser(HttpUser):
+    wait_time = between(1, 5)  # Time between requests
+
+    @task(1)
+    def index(self):
+        self.client.get("/")
+
+    @task(2)
+    def predict(self):
+        payload = {
+           "fixed_acidity": random.uniform(3.8, 15.9),
+            "volatile_acidity": random.uniform(0.08, 1.58),
+            "citric_acid": random.uniform(0.0, 1.66),
+            "residual_sugar": random.uniform(0.6, 65.8),
+            "chlorides": random.uniform(0.009, 0.611),
+            "free_sulfur_dioxide": random.uniform(1, 289.0),
+            "total_sulfur_dioxide": random.uniform(6.0, 440.0),
+            "density": random.uniform(0.987110, 1.038980),
+            "pH": random.uniform(2.720, 4.010),
+            "sulphates": random.uniform(0.220, 2.000),
+            "alcohol": random.uniform(8.0, 14.9),
+            "red_wine": random.choice([0, 1])
+        }
+
+        headers = {"Content-Type": "application/json"}
+
+        response = self.client.post("/predict", data=json.dumps(payload), headers=headers)
+
+        print(response.text)
+
+    @task(3)
+    def predict_with_invalid_data(self):
+        # Send a POST request with invalid data to trigger a potential error
+        invalid_payload = {"invalid_field": "invalid_value"}
+        headers = {"Content-Type": "application/json"}
+
+        response = self.client.post("/predict", data=json.dumps(invalid_payload), headers=headers)
+
+        print(response.text)
+
+``` 
+
+This is the locust file for the prediction web service deployment. I assigned the values of the rows to random values between the minimum and maximum ranges to simulate multiple users.
+
+
+To run this, head to the terminal and type out ```locust -f {name of file}``` and hit enter. A link should be provided and you will be taking to the locust UI.
+
+
+![](images/locust_home.png)
+
+Here, you have the option to select the number of users. You also have to provide the host address. 
+
+
+Then we will see a table showing the model:
+
+
+![](images/locust_chart.png)
+
+
+Locust also shows some charts as the system is running:
+
+
+![](images/locust_graph1.png)
+![](images/locust_graph2.png)

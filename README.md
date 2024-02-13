@@ -623,7 +623,7 @@ This installs deepchecks, which is what we will use for our integration. It also
 ![](images/CI_CD2.png)
 
 
-### 1. Deployment
+### 4. Deployment
 
 So with a functioning model like, it would be a shame to just leave it unused. Model deployment was discussed in previous sections but there are other ways where you can actually input the values for the independent variables and it will predict the target variable for you. 
 
@@ -826,3 +826,91 @@ Locust also shows some charts as the system is running:
 
 ![](images/locust_graph1.png)
 ![](images/locust_graph2.png)
+
+
+### 5. Monitoring
+
+For the last part of the project. We will have to do a bit of monitoring. And decided to usw a library called ```evidently```. **Evidently** is an open-source Python library for data scientists and ML engineers.
+It helps evaluate, test, and monitor data and ML models from validation to production. It works with tabular, text data and embeddings.
+
+
+We start installing ```evidently``` the same way we've installed previous libraries 
+
+    pip install evidently
+
+
+And we import them in our file
+
+```python
+from evidently import ColumnMapping
+from evidently.report import Report
+from evidently.metrics import ColumnDriftMetric, DatasetDriftMetric, DatasetMissingValuesMetric 
+
+```
+
+
+The monitoring builds off from where the model training ends. So I made a new file called ```wine_quality_monitoring.ipynb``` , where I train the model using just ```RandomForestClassifier``` , and monitor it. I also added an aditional column called ```prediction``` for both datasets, which is it the column with the predicted wine quality values. 
+
+
+```python
+rfc.fit(X_train, y_train)
+train_pred_rfc = rfc.predict(X_train)
+train_df['prediction'] = train_pred_rfc
+```
+
+```python
+rfc.fit(X_val, y_val)
+val_pred_rfc = rfc.predict(X_val)
+validation_df['prediction'] = val_pred_rfc
+```
+
+
+Now I have to identify some columns to be recorded:
+
+```python
+column_mapping = ColumnMapping(
+    target=None,
+    prediction='prediction',
+    numerical_features=["fixed_acidity","volatile_acidity","citric_acid","residual_sugar",
+                        "chlorides","free_sulfur_dioxide","total_sulfur_dioxide","density","pH","sulphates","alcohol","red_wine"]
+)
+```
+
+
+Also need to get a report as well as the data ready. The Report will identify any data drifts and also check for missing values.
+
+```python
+report = Report(metrics=[
+    ColumnDriftMetric(column_name='prediction'),
+    DatasetDriftMetric(),
+    DatasetMissingValuesMetric()
+]
+)
+```
+
+Evidently also comes with a neat UI
+
+![](images/drift1.png)
+This shows us that the Drify Score is 0.009, which is very good. We also get a graphical representation.
+
+![](images/drift2.png)
+
+
+We also get to see the distribution of the predicted columns for both datasets
+
+![](images/distribution.png)
+
+We also get an overall summary 
+
+![](images/monitoring_data.png)
+
+
+
+### Conclusion
+
+This brings us to the end of the MLOps Project where we've gone through the whole process of finding a dataset to make some predictions on, training a prediction model, fine tuning it, orchestrating the pipeline, testing, deploying, automation and monitoring. 
+
+
+I personally feel like going through this project has strengthened my understanding of the the concept of Machine Learning Operations and how the entire process goes. Much more than I expected but it was worth it. 
+
+I'd like to thank RGT for giving me this task to improve on myself and I look forward to applying these new found skills.
